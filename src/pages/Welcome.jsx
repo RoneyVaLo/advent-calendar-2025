@@ -1,6 +1,9 @@
 import { Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const Welcome = ({ setView }) => {
+const Welcome = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen text-center px-6 relative z-10 animate-fade-in">
       <div className="mb-8 opacity-80">
@@ -19,7 +22,7 @@ const Welcome = ({ setView }) => {
       </p>
 
       <button
-        onClick={() => setView("map")}
+        onClick={() => navigate("/map")}
         className="group relative px-10 py-4 bg-[#5A3E36] text-[#FDF7F1] rounded-full text-xl font-serif tracking-widest hover:bg-[#C16E70] transition-colors duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1 cursor-pointer"
       >
         <span className="relative z-10">Entrar</span>

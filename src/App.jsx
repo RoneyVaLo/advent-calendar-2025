@@ -1,67 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Route, Routes, useNavigate } from "react-router-dom";
+import { db } from "./firebase";
+import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
+import Loader from "./components/Loader";
 import Welcome from "./pages/Welcome";
 import Map from "./pages/Map";
 import Chapter from "./pages/Chapter";
+import Puzzle from "./pages/Puzzle";
+import Final from "./pages/Final";
 
 const TOTAL_DAYS = 24;
 
-const generateDaysData = () => {
-  const days = [];
-  for (let i = 1; i <= 24; i++) {
-    let type = "story";
-    let title = `Capítulo ${i}: El Comienzo del Frío`;
-    let content =
-      "El invierno llegó suavemente, cubriendo nuestras huellas con un manto blanco. Recuerdo el día en que nos conocimos, el aire olía a pino y promesas...";
-    let clue = "Busca donde guardamos los recuerdos de papel.";
-
-    // Contenido específico para demostración
-    if (i === 1) {
-      title = "Capítulo 1: El Primer Copo";
-      content =
-        "Todo comienza con un pequeño destello en el cielo gris. Así apareciste tú en mi vida, silenciosa pero transformándolo todo. Este calendario no es solo una cuenta atrás, es un mapa de lo que somos.";
-      clue = "La primera pieza es la base de todo.";
-    }
-    if (i === 5) {
-      type = "gift";
-      title = "Día 5: Un Pequeño Detalle";
-      content =
-        "A veces el amor no necesita palabras, solo un momento de calma compartido. Hoy quiero regalarte eso.";
-    }
-    if (i === 12) {
-      title = "Capítulo 12: Mitad del Camino";
-      content =
-        "Doce días de magia. La nieve se acumula fuera, pero aquí dentro, el fuego de nuestra historia arde más fuerte que nunca.";
-      clue = "Mira bajo la luz más cálida de la casa.";
-    }
-    if (i === 24) {
-      type = "final";
-      title = "Día 24: El Encuentro Final";
-      content =
-        "Hemos llegado al final de este calendario, pero solo al principio de nuestra próxima gran aventura. Gracias por cada día.";
-    }
-
-    days.push({
-      id: i,
-      day: i,
-      type: type, // 'story', 'gift', 'final'
-      title: title,
-      content: content,
-      clue: clue,
-      image: `https://images.unsplash.com/photo-${
-        i % 2 === 0 ? "1477601458968-3d122247ba84" : "1543589077-47d821896773"
-      }?auto=format&fit=crop&w=800&q=80`, // Winter aesthetic placeholders
-      isLocked: false, // En una app real, esto dependería de la fecha actual
-      isCompleted: false,
-    });
-  }
-  return days;
-};
-
 const App = () => {
-  const [view, setView] = useState("welcome");
+  const navigate = useNavigate();
+
   const [currentDay, setCurrentDay] = useState(null);
-  const [daysData, setDaysData] = useState(generateDaysData());
+  const [daysData, setDaysData] = useState([]);
   const [collectedPieces, setCollectedPieces] = useState([]); // Array of day IDs
+  const [showFinalLetter, setShowFinalLetter] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const chaptersCollectionRef = collection(db, "chapters");
+
+  useEffect(() => {
+    const fetchChapters = async () => {
+      try {
+        setLoading(true);
+        const data = await getDocs(chaptersCollectionRef);
+
+        const filteredData = data.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+
+        setDaysData(
+          filteredData.sort((a, b) => parseInt(a.id) - parseInt(b.id))
+        );
+
+        // Filtrar los capítulos completados y guardar sus IDs
+        const completedIds = filteredData
+          .filter((chapter) => chapter.isCompleted === true)
+          .map((chapter) => parseInt(chapter.id));
+
+        setCollectedPieces(completedIds);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setLoading(false);
+      }
+    };
+
+    fetchChapters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDayClick = (dayId) => {
     const day = daysData.find((d) => d.id === dayId);
@@ -71,44 +63,83 @@ const App = () => {
     // Aquí permite abrir todos para la demo, pero visualmente se marca el progreso.
 
     setCurrentDay(day);
-    setView("chapter");
+    navigate("chapter");
   };
 
-  const handleCollectPiece = (dayId) => {
+  // La función ahora debe ser 'async'
+  const handleCollectPiece = async (dayId) => {
+    // **1. Actualizar Firestore**
+    try {
+      setLoading(true);
+      const chapterRef = doc(db, "chapters", dayId.toString());
+
+      await updateDoc(chapterRef, {
+        isCompleted: true,
+      });
+
+      console.log(`Capítulo ${dayId} actualizado correctamente en Firestore.`);
+    } catch (error) {
+      console.error("Error al actualizar el documento en Firestore:", error);
+      return;
+    } finally {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setLoading(false);
+    }
+
+    // **2. Actualizar el estado local (UI)**
     if (!collectedPieces.includes(dayId)) {
       setCollectedPieces([...collectedPieces, dayId]);
     }
-    // Marcar como completado
+
     setDaysData((prev) =>
-      prev.map((d) => (d.id === dayId ? { ...d, isCompleted: true } : d))
+      prev.map((d) => (d.id == dayId ? { ...d, isCompleted: true } : d))
     );
 
+    // **3. Lógica de navegación**
     if (dayId === 24) {
-      setView("final");
+      navigate("/puzzle");
+      setShowFinalLetter(true);
     } else {
-      setView("puzzle");
+      navigate("/puzzle");
     }
   };
 
+  if (loading) return <Loader />;
+
   return (
     <main>
-      {view === "welcome" && <Welcome setView={setView} />}
-      {view === "map" && (
-        <Map
-          setView={setView}
-          daysData={daysData}
-          handleDayClick={handleDayClick}
-          collectedPieces={collectedPieces}
-          TOTAL_DAYS={TOTAL_DAYS}
+      <Routes>
+        <Route path="/" element={<Welcome />} />
+
+        <Route
+          path="/map"
+          element={
+            <Map
+              daysData={daysData}
+              handleDayClick={handleDayClick}
+              collectedPieces={collectedPieces}
+              TOTAL_DAYS={TOTAL_DAYS}
+            />
+          }
         />
-      )}
-      {view === "chapter" && (
-        <Chapter
-          currentDay={currentDay}
-          setView={setView}
-          handleCollectPiece={handleCollectPiece}
+
+        <Route
+          path="/chapter"
+          element={
+            <Chapter
+              currentDay={currentDay}
+              handleCollectPiece={handleCollectPiece}
+            />
+          }
         />
-      )}
+
+        <Route
+          path="/puzzle"
+          element={<Puzzle collectedPieces={collectedPieces} />}
+        />
+      </Routes>
+
+      {showFinalLetter && <Final setShowFinalLetter={setShowFinalLetter} />}
     </main>
   );
 };

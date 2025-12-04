@@ -2,14 +2,11 @@ import { Lock } from "lucide-react";
 import { Star } from "lucide-react";
 import { Heart } from "lucide-react";
 import { Puzzle } from "lucide-react";
+import { getDay } from "../utils/Date";
+import { useNavigate } from "react-router-dom";
 
-const Map = ({
-  setView,
-  daysData,
-  handleDayClick,
-  collectedPieces,
-  TOTAL_DAYS,
-}) => {
+const Map = ({ daysData, handleDayClick, collectedPieces, TOTAL_DAYS }) => {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen pb-20 px-4 pt-10 z-10 relative">
       <header className="flex justify-between items-center mb-10 max-w-4xl mx-auto">
@@ -18,7 +15,7 @@ const Map = ({
           <p className="text-[#8A6F63] italic">Día a día, pieza a pieza</p>
         </div>
         <button
-          onClick={() => setView("puzzle")}
+          onClick={() => navigate("/puzzle")}
           className="flex items-center gap-2 px-4 py-2 bg-[#E8DCCB] rounded-full hover:bg-[#D1C0A8] transition-colors text-[#5A3E36] cursor-pointer"
         >
           <Puzzle size={18} />
@@ -32,7 +29,7 @@ const Map = ({
             key={day.id}
             onClick={() => handleDayClick(day.id)}
             className={`
-              relative aspect-3/4 rounded-t-full rounded-b-lg border-2 flex flex-col items-center justify-center transition-all duration-500 group cursor-pointer
+              relative aspect-3/4 rounded-t-full rounded-b-lg border-2 flex flex-col items-center justify-center transition-all duration-500 group
               ${
                 day.isCompleted
                   ? "bg-[#FDF7F1] border-[#C16E70] border-opacity-30"
@@ -41,14 +38,19 @@ const Map = ({
             `}
           >
             {/* Window frame detail */}
-            <div className="absolute inset-2 border border-white border-opacity-40 rounded-t-full rounded-b-lg pointer-events-none" />
+            <div
+              className={`absolute inset-2 border border-white border-opacity-40 rounded-t-full rounded-b-lg pointer-events-none ${
+                day.isCompleted &&
+                `bg-[url('/window-bg.webp')] bg-cover bg-center`
+              }`}
+            />
 
             <span
               className={`text-2xl font-serif font-bold ${
                 day.isCompleted ? "text-[#C16E70]" : "text-[#5A3E36]"
               }`}
             >
-              {day.day}
+              {getDay(day.day)}
             </span>
 
             <div className="mt-2">
