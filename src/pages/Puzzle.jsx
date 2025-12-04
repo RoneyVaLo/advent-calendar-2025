@@ -33,13 +33,13 @@ const Puzzle = ({ collectedPieces }) => {
                 className={`
                       aspect-square rounded flex items-center justify-center transition-all duration-700
                       ${
-                        !isCollected
+                        isCollected
                           ? "bg-white shadow-sm scale-100 opacity-100"
                           : "bg-[#D1C0A8] opacity-50 scale-95 inner-shadow"
                       }
                     `}
               >
-                {!isCollected ? (
+                {isCollected ? (
                   <img
                     src={`/puzzle/day-${dayNum}.webp`}
                     className="w-full h-full object-cover rounded opacity-80"
