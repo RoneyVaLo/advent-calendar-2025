@@ -8,6 +8,7 @@ import Map from "./pages/Map";
 import Chapter from "./pages/Chapter";
 import Puzzle from "./pages/Puzzle";
 import Final from "./pages/Final";
+import { Lock } from "lucide-react";
 
 const TOTAL_DAYS = 24;
 
@@ -18,6 +19,7 @@ const App = () => {
   const [daysData, setDaysData] = useState([]);
   const [collectedPieces, setCollectedPieces] = useState([]); // Array of day IDs
   const [showFinalLetter, setShowFinalLetter] = useState(false);
+  const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const chaptersCollectionRef = collection(db, "chapters");
@@ -59,14 +61,24 @@ const App = () => {
     const day = daysData.find((d) => d.id === dayId);
     if (!day) return;
 
-    // Simulación: Si es un día futuro en una app real, se mostraría un bloqueo.
-    // Aquí permite abrir todos para la demo, pero visualmente se marca el progreso.
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentDayOfMonth = today.getDate();
+
+    console.log(currentMonth);
+
+    if (currentMonth === 11 && dayId > currentDayOfMonth) {
+      setNotification(
+        `❄️ El misterio para el día ${dayId} aún está escribiéndose...`
+      );
+      setTimeout(() => setNotification(null), 3500);
+      return;
+    }
 
     setCurrentDay(day);
     navigate("chapter");
   };
 
-  // La función ahora debe ser 'async'
   const handleCollectPiece = async (dayId) => {
     // **1. Actualizar Firestore**
     try {
@@ -140,6 +152,15 @@ const App = () => {
       </Routes>
 
       {showFinalLetter && <Final setShowFinalLetter={setShowFinalLetter} />}
+
+      {notification && (
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-[#5A3E36] text-[#FDF7F1] px-6 py-3 rounded-full shadow-xl flex items-center gap-3 notification-toast border border-[#C16E70]">
+          <Lock size={18} className="text-[#C16E70]" />
+          <span className="font-serif tracking-wide text-sm md:text-base">
+            {notification}
+          </span>
+        </div>
+      )}
     </main>
   );
 };
