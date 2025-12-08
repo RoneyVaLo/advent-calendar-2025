@@ -1,8 +1,10 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getDay } from "../utils/Date";
 
-const Puzzle = ({ collectedPieces }) => {
+const Puzzle = ({ collectedPieces, daysData, setSelectedPuzzleImage }) => {
   const navigate = useNavigate();
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 z-10 relative">
       <div className="absolute top-4 left-4 z-20">
@@ -26,6 +28,7 @@ const Puzzle = ({ collectedPieces }) => {
           {Array.from({ length: 24 }).map((_, i) => {
             const dayNum = i + 1;
             const isCollected = collectedPieces.includes(dayNum);
+            const dayData = daysData.find((d) => getDay(d.day) === dayNum);
 
             return (
               <div
@@ -39,12 +42,17 @@ const Puzzle = ({ collectedPieces }) => {
                       }
                     `}
               >
-                {isCollected ? (
-                  <img
-                    src={`/puzzle/day-${dayNum}.webp`}
-                    className="w-full h-full object-cover rounded opacity-80"
-                    alt="piece"
-                  />
+                {isCollected && dayData ? (
+                  <button
+                    onClick={() => setSelectedPuzzleImage(dayData)}
+                    className="w-full h-full p-0 border-0 rounded overflow-hidden focus:outline-none focus:ring-2 focus:ring-[#C16E70]"
+                  >
+                    <img
+                      src={`/puzzle/day-${dayNum}.webp`}
+                      className="w-full h-full object-cover rounded opacity-80 cursor-zoom-in"
+                      alt="piece"
+                    />
+                  </button>
                 ) : (
                   <span className="text-black font-serif text-lg font-bold opacity-70">
                     {dayNum}

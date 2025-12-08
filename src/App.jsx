@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom";
-import { db } from "./firebase";
 import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
+import { Lock, X } from "lucide-react";
+import { db } from "./firebase";
 import Loader from "./components/Loader";
 import Welcome from "./pages/Welcome";
 import Map from "./pages/Map";
 import Chapter from "./pages/Chapter";
 import Puzzle from "./pages/Puzzle";
 import Final from "./pages/Final";
-import { Lock } from "lucide-react";
 
 const TOTAL_DAYS = 24;
 
@@ -21,6 +21,12 @@ const App = () => {
   const [showFinalLetter, setShowFinalLetter] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const [selectedPuzzleImage, setSelectedPuzzleImage] = useState(null);
+
+  const closePuzzleModal = () => {
+    setSelectedPuzzleImage(null);
+  };
 
   const chaptersCollectionRef = collection(db, "chapters");
 
@@ -127,7 +133,7 @@ const App = () => {
           path="/map"
           element={
             <Map
-              daysData={daysData}
+              daysData={daysData || []}
               handleDayClick={handleDayClick}
               collectedPieces={collectedPieces}
               TOTAL_DAYS={TOTAL_DAYS}
@@ -147,7 +153,13 @@ const App = () => {
 
         <Route
           path="/puzzle"
-          element={<Puzzle collectedPieces={collectedPieces} />}
+          element={
+            <Puzzle
+              collectedPieces={collectedPieces}
+              daysData={daysData || []}
+              setSelectedPuzzleImage={setSelectedPuzzleImage}
+            />
+          }
         />
       </Routes>
 
@@ -159,6 +171,32 @@ const App = () => {
           <span className="font-serif tracking-wide text-sm md:text-base">
             {notification}
           </span>
+        </div>
+      )}
+
+      {/* Modal de Imagen a Pantalla Completa */}
+      {selectedPuzzleImage && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={closePuzzleModal}
+        >
+          {/* Modal */}
+          <div className="relative bg-white rounded-2xl p-5 max-w-[90vw] max-h-[90vh] overflow-hidden shadow-xl">
+            {/* Botón cerrar */}
+            <button
+              onClick={closePuzzleModal}
+              className="absolute top-0.5 right-0.5 text-black hover:text-red-500 font-bold transition-all"
+            >
+              <X size={22} />
+            </button>
+
+            {/* Imagen contenida */}
+            <img
+              src={`/puzzle/day-${selectedPuzzleImage.id}.webp`}
+              alt="Pieza completa"
+              className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+            />
+          </div>
         </div>
       )}
     </main>
