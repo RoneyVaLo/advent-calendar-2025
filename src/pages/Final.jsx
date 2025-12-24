@@ -19,7 +19,7 @@ const Final = ({ setShowFinalLetter }) => {
           <br />
           Tú eres mi heroína, mi aventura favorita y la pieza que completa mi
           vida. El invierno puede ser frío, pero mientras estemos juntos,
-          siempre será verano en casa.
+          siempre será verano.
         </p>
 
         <h3 className="mt-8 text-right text-xl">- Te amo.</h3>
@@ -27,11 +27,6 @@ const Final = ({ setShowFinalLetter }) => {
         <button
           className="reveal-btn"
           style={{
-            background: "transparent",
-            border: "1px solid #ffd700",
-            padding: "10px 20px",
-            cursor: "pointer",
-            marginTop: "20px",
             transition: "all 0.3s",
           }}
           onClick={() => {

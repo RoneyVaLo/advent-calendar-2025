@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { getDay } from "../utils/Date";
 import { Music4 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Ticket } from "lucide-react";
 
 const Chapter = ({ currentDay, handleCollectPiece }) => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ const Chapter = ({ currentDay, handleCollectPiece }) => {
   if (!currentDay) return null;
 
   const isGift = currentDay.giftType;
+  const isFinal = currentDay.type === "final";
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 z-20 relative">
@@ -63,11 +65,19 @@ const Chapter = ({ currentDay, handleCollectPiece }) => {
           ) : isGift && isGift === "coupon" ? (
             <>
               <div className="mt-auto p-6 bg-[#FDF7F1] border border-[#C16E70] border-dashed rounded-lg w-full max-w-sm">
-                <Gift className="mx-auto text-[#C16E70] w-12 h-12 mb-4" />
+                {isFinal ? (
+                  <Ticket className="mx-auto text-[#C16E70] w-12 h-12 mb-4" />
+                ) : (
+                  <Gift className="mx-auto text-[#C16E70] w-12 h-12 mb-4" />
+                )}
                 <p className="font-serif text-xl text-[#5A3E36] mb-2">
-                  Toma un screenshot para que lo puedas canjear:
+                  {!isFinal
+                    ? "Toma un screenshot para que lo puedas canjear:"
+                    : "Cupón desbloqueado:"}
                 </p>
-                <p className="text-[#8A6F63] italic">
+                <p
+                  className={`text-[#8A6F63] italic ${isFinal && "font-bold"}`}
+                >
                   {currentDay.giftContent}
                 </p>
               </div>

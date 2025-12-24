@@ -122,3 +122,19 @@ h4 {
       -70px 90px 0 rgba(0, 0, 0, 0);
   }
 }
+
+.reveal-btn {
+  background: transparent;
+  border: 2px dashed #ffd700;
+  padding: 12px 24px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.reveal-btn:hover {
+  transform: scale(1.1);
+}
+
+.reveal-btn:active {
+  transform: scale(0.9);
+}
